@@ -1,3 +1,4 @@
+#### 由于GitHub对数学公式的支持不够好，本文档的公式可能无法正常显示。文字部分请下载PDF版本查看：`README.pdf`。
 # <center> 简单的单周期CPU设计 </center>
 ## <center> 俞嘉权 PB22010390 </center>
 #### <center> 2024年春季学期，计算机组成原理实验 </center>
