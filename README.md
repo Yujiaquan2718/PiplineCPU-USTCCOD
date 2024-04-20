@@ -1,3 +1,6 @@
+# 五级流水线CPU
+#### 五级流水线CPU的全部设计代码已经放在desings-PiplineCPU文件夹中，由于时间关系，没有来得及写流水线CPU的说明文档README，但是代码中有详细的注释，说明文档会在作者期中考试结束之后跟进。
+#### 简单单周期CPU的设计代码放在designs-SingleCycleCPU文件夹中，README文档如下：
 #### 由于GitHub对数学公式的支持不够好，本文档的公式可能无法正常显示。文字部分请打开PDF版本查看：`README.pdf`。
 # <center> 简单的单周期CPU设计 </center>
 ## <center> 俞嘉权 PB22010390 </center>
