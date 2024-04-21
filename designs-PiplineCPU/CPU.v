@@ -51,7 +51,7 @@ module CPU(input clk,                     // Clock signal
   wire rf_we_id, alu_src0_sel_id, alu_src1_sel_id;
   wire [ 3:0] dmem_access_id, br_type_id;
   wire [ 1:0] rf_wd_sel_id;
-  wire [31:0] pcadd4_ex, pc_ex, imm_ex, rf_rd0_ex, rf_rd1_ex, rf_rd0_alu, rf_rd1_alu, alu_res_ex;
+  wire [31:0] pcadd4_ex, pc_ex, imm_ex, rf_rd0_ex, rf_rd1_ex, rf_rd0_ex_df, rf_rd1_ex_df, alu_res_ex;
   wire [ 4:0] rf_wa_ex, alu_op_ex;
   wire rf_we_ex, alu_src0_sel_ex, alu_src1_sel_ex;
   wire [ 3:0] dmem_access_ex, br_type_ex;
@@ -116,7 +116,6 @@ module CPU(input clk,                     // Clock signal
        .rst(rst),          // Reset signal
        .en(global_en),     // Global enable signal
        .npc(npc_ex),      // Next program counter
-       .stall(stall_pc || ifhalt),   // Stall signal
        .pc(pc_if)         // Current program counter
      );
 
@@ -124,6 +123,7 @@ module CPU(input clk,                     // Clock signal
   // This module adds 4 to the current PC
   ADD4 add4_module(
          .pc_in(pc_if),     // Input: Current PC
+         .stall(stall_pc || ifhalt),  // Stall signal
          .pc_out(pcadd4_if)   // Output: PC + 4
        );
 
@@ -269,10 +269,10 @@ module CPU(input clk,                     // Clock signal
         .rf_we_mem(rf_we_mem),      // Write enable signal for data hazard detection
         .rf_we_wb(rf_we_wb),        // Write enable signal for data hazard detection
         .rf_wd_sel(rf_wd_sel_mem),    // Select signal for data forwarding
-        .dmem_rd_out(dmem_rd_out_mem),  // Data read from data memory
+        .alu_res_mem(alu_res_mem),    // Result from ALU
         .rf_wd(rf_wd),          // Data to be written to the register file
         .rf_rd(rf_rd0_ex),        // Data read from the register file
-        .rf_rd_out(rf_rd0_alu)      // Data to be forwarded to the ALU
+        .rf_rd_out(rf_rd0_ex_df)      // Data to be forwarded to the ALU
       );
 
   DFU dfu_1(
@@ -282,22 +282,22 @@ module CPU(input clk,                     // Clock signal
         .rf_we_mem(rf_we_mem),      // Write enable signal for data hazard detection
         .rf_we_wb(rf_we_wb),        // Write enable signal for data hazard detection
         .rf_wd_sel(rf_wd_sel_mem),    // Select signal for data forwarding
-        .dmem_rd_out(dmem_rd_out_mem),  // Data read from data memory
+        .alu_res_mem(alu_res_mem),    // Result from ALU
         .rf_wd(rf_wd),          // Data to be written to the register file
         .rf_rd(rf_rd1_ex),        // Data read from the register file
-        .rf_rd_out(rf_rd1_alu)      // Data to be forwarded to the ALU
+        .rf_rd_out(rf_rd1_ex_df)      // Data to be forwarded to the ALU
       );
 
   // Instantiate the MUX modules for selecting ALU inputs
   MUX #(.WIDTH(32)) mux0(
-        .src0(rf_rd0_alu),         // Source 0: Data read from register file
+        .src0(rf_rd0_ex_df),         // Source 0: Data read from register file
         .src1(pc_ex),         // Source 1: Current PC
         .sel(alu_src0_sel_ex),    // Select signal
         .res(alu_src0)         // Result: ALU source 0
       );
 
   MUX #(.WIDTH(32)) mux1(
-        .src0(rf_rd1_alu),         // Source 0: Data read from register file
+        .src0(rf_rd1_ex_df),         // Source 0: Data read from register file
         .src1(imm_ex),            // Source 1: Immediate value
         .sel(alu_src1_sel_ex),    // Select signal
         .res(alu_src1)         // Result: ALU source 1
@@ -316,8 +316,8 @@ module CPU(input clk,                     // Clock signal
   // This module determines the type of branch and the next PC
   Branch branch_module(
            .br_type(br_type_ex),  // Branch type
-           .br_src0(rf_rd0_ex),   // Source 0 for branch comparison
-           .br_src1(rf_rd1_ex),   // Source 1 for branch comparison
+           .br_src0(rf_rd0_ex_df),   // Source 0 for branch comparison
+           .br_src1(rf_rd1_ex_df),   // Source 1 for branch comparison
            .npc_sel(npc_sel)   // Select signal for next PC
          );
 
@@ -340,7 +340,7 @@ module CPU(input clk,                     // Clock signal
                           .stall(0),
                           .flush(0),
                           .pcadd4_in(pcadd4_ex),
-                          .rf_rd1_in(rf_rd1_ex),
+                          .rf_rd1_in(rf_rd1_ex_df),
                           .alu_res_in(alu_res_ex),
                           .rf_wa_in(rf_wa_ex),
                           .rf_we_in(rf_we_ex),

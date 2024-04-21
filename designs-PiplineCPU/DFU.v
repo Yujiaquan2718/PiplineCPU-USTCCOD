@@ -23,14 +23,14 @@
 module DFU(input [4:0] rf_ra, rf_wa_mem, rf_wa_wb,
              input rf_we_mem, rf_we_wb,
              input [1:0] rf_wd_sel,
-             input [31:0] dmem_rd_out, rf_wd, rf_rd,
+             input [31:0] alu_res_mem, rf_wd, rf_rd,
              output reg [31:0] rf_rd_out);
 
   always @(*)
   begin
-    if (rf_ra == rf_wa_mem && rf_we_mem && rf_ra && rf_wd_sel == 2'b01)
+    if (rf_ra == rf_wa_mem && rf_we_mem && rf_ra && rf_wd_sel == 2'b00)
     begin
-      rf_rd_out = dmem_rd_out;
+      rf_rd_out = alu_res_mem;
     end
     else if (rf_ra == rf_wa_wb && rf_we_wb && rf_ra)
     begin

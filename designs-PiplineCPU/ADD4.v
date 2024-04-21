@@ -21,7 +21,9 @@
 
 
 module ADD4(input wire [31:0] pc_in,    // 当前PC值
+              input stall,    // 暂停信号
               output wire [31:0] pc_out); // 下一个PC值
 
-  assign pc_out = pc_in + 4; // 下一个PC值为当前PC值加4
+  assign pc_out = stall ? pc_in : pc_in + 4; // 下一个PC值为当前PC值加4
+
 endmodule

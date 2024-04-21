@@ -25,7 +25,6 @@ module PC #(parameter WIDTH = 32)
    input [0 : 0] rst,
    input [0 : 0] en,
    input [WIDTH - 1 : 0] npc,
-   input [0 : 0] stall,
    output reg [WIDTH - 1 : 0] pc);
 
   always @(posedge clk)
@@ -36,7 +35,7 @@ module PC #(parameter WIDTH = 32)
       begin
         pc <= 32'h00400000;
       end
-      else if (!stall)
+      else
         pc <= npc;
     end
   end
