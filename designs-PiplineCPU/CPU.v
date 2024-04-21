@@ -402,7 +402,7 @@ module CPU(input clk,                     // Clock signal
                           .rf_wd_sel_in(rf_wd_sel_mem),
                           .pcadd4_out(pcadd4_wb),
                           .alu_res_out(alu_res_wb),
-                          .rf_rd1_out(dmem_rd_out_wb),
+                          .dmem_rd_out_out(dmem_rd_out_wb),
                           .rf_wa_out(rf_wa_wb),
                           .rf_we_out(rf_we_wb),
                           .rf_wd_sel_out(rf_wd_sel_wb),

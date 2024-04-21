@@ -52,8 +52,8 @@ module RegFile #(parameter WIDTH = 32,
     end
   end
 
-  assign rf_rd0       = (rf_we && (rf_ra0 == rf_wa)) ? rf_wd : reg_file[rf_ra0];
-  assign rf_rd1       = (rf_we && (rf_ra1 == rf_wa)) ? rf_wd : reg_file[rf_ra1];
+  assign rf_rd0       = (rf_we && (rf_ra0 == rf_wa) && rf_wa) ? rf_wd : reg_file[rf_ra0];
+  assign rf_rd1       = (rf_we && (rf_ra1 == rf_wa) && rf_wa) ? rf_wd : reg_file[rf_ra1];
   assign debug_reg_rd = reg_file[debug_reg_ra];
 
 endmodule
