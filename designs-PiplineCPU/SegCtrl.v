@@ -37,7 +37,7 @@ module SegCtrl(input rf_we_ex,
         stall_if2id = 0;
         flush_if2id = 0;
         flush_id2ex = 0;
-        if (rf_we_ex && rf_wd_sel_ex == 2'b01 && (rf_wa_ex == rf_ra0_id || rf_wa_ex == rf_ra1_id))
+        if (rf_we_ex && rf_wd_sel_ex == 2'b01 && (rf_wa_ex == rf_ra0_id || rf_wa_ex == rf_ra1_id) && rf_wa_ex)
         begin
             stall_pc = 1;
             stall_if2id = 1;
