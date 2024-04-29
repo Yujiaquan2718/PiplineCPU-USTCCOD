@@ -1,15 +1,15 @@
-# 五级流水线CPU
-#### 五级流水线CPU的全部设计代码已经放在desings-PiplineCPU文件夹中，由于时间关系，没有来得及写流水线CPU的说明文档README，但是代码中有详细的注释，说明文档会在作者期中考试结束之后跟进。
-#### 简单单周期CPU的设计代码放在designs-SingleCycleCPU文件夹中，README文档如下：
-#### 由于GitHub对数学公式的支持不够好，本文档的公式可能无法正常显示。文字部分请打开PDF版本查看：`README.pdf`。
-# <center> 简单的单周期CPU设计 </center>
-## <center> 俞嘉权 PB22010390 </center>
-#### <center> 2024年春季学期，计算机组成原理实验 </center>
+##### 单周期CPU的设计代码见于文件夹 `designs-SingleCycleCPU` ，五级流水线CPU的设计代码见于文件夹 `designs-PiplineCPU` ，代码中有详细的注释。仿真与测试的代码与资源见于文件夹 `sims`, `tests` 。
+##### 下面是三篇说明文档，分别是单周期CPU的设计文档、五级流水线CPU的设计文档、仿真与测试的使用说明。读者也可查看这三篇文档的PDF版本：`SingleCycleCPU_read_document.pdf`, `PiplineCPU_read_document.pdf`, `Simulate-and-test_read_document.pdf` 。
+##### 著作信息： PB22010390 俞嘉权，中国科学技术大学，计算机组成原理实验（2024年春季学期）。
 
-### 目标
-基于 $RISC-V$ 指令集架构，设计一个完整的单周期CPU，这一CPU支持基础的算术与逻辑运算指令与跳转和访存功能。
+
+
+## <center> 单周期CPU设计 </center>
 
 ### 设计概述
+
+基于 RISC-V 指令集架构，设计一个完整的单周期CPU，这一CPU支持基础的算术与逻辑运算指令与跳转和访存功能。
+
 实现这一简单的单周期CPU所需要的模块为：
 1. 程序计数器（PC）
 2. 指令内存（INST_MEM）
@@ -20,25 +20,27 @@
 7. 访存控制单元（SLU）
 8. 数据内存（DATA_MEM）
 9. 选择单元（MUX）
-![DATAPATH](CPU.png "Datapath of CPU")
-<center>  <b>Datapath of CPU</b>  </center>
+![DATAPATH](SingleCycleCPU.png "Datapath of CPU")
+<center>  <b>Datapath of Single Cycle CPU</b>  </center>
 
-数据通路如图，使用verilog语言完成这些设计。
+CPU的数据通路如图，使用verilog语言完成这些设计。
 
-#### 程序计数器
-代码及具体过程的注释可见于 `PC.v` ，`ADD4.v` 与 `MUX2.v`（这些设计代码可以在 `designs` 文件夹里看到）。
+### 设计细节
 
-在CPU中，PC寄存器时刻存储了正在执行的指令的地址。它的功能是将当前指令的地址传递给指令存储器，从而读出此时正确的指令内容。同时，它也需要能够接受下一条指令地址的输入，并在时钟上升沿到来时更新自己的值，从而实现了指令的连续运行。
+#### 程序计数器 PC
 
-寄存器的写入操作应当在每个时钟周期内进行；因而，CPU的PC寄存器理论上是不需要使能信号的。这里保留使能信号是用于便于我们的调试，是为了在FPGA上运行我们的设计时，可以引入来自PDU的控制逻辑；使我们在调试的时候可以在合适的时机使CPU停下来以观察CPU的执行情况。在复位PC寄存器时，我们将其复位为 $0x00400000$ ，这是 $RV32I$ 指令集程序段的起始地址。$RV32I$ 是32位架构，按字节寻址，一条指令（一个字）为4字节，因此ADD4模块中PC的自增量为4，在向指令内存INST_MEM取指时，直接略去PC的末2位（32位机器的内存中的一个位置存储32位数据，即一个字，4字节）。ADD4模块中还有一个停机判断，若停机信号为真，则PC不再自增，保持当前值；在 $RV32I$ 架构中，停机指令为 $0x00100073$ ，即 $ebreak$ 指令。
+在CPU中，程序计数器（Program Counter）寄存器时刻存储了正在执行的指令的地址。它的功能是将当前指令的地址传递给指令存储器，从而读出此时正确的指令内容。同时，它也需要能够接受下一条指令地址的输入，并在时钟上升沿到来时更新自己的值，从而实现指令的连续运行。
+
+寄存器的写入操作应当在每个时钟周期内进行；因而，CPU的 PC 寄存器理论上是不需要使能信号的。这里保留使能信号是用于便于我们的调试，是为了在FPGA上运行我们的设计时，可以引入来自 PDU 的控制逻辑；使我们在调试的时候可以在合适的时机使CPU停下来以观察CPU的执行情况。在复位 PC 寄存器时，我们将其复位为 $0x00400000$ ，这是 $RV32I$ 指令集程序段的起始地址。$RV32I$ 是32位架构，按字节寻址，一条指令（一个字）为4字节，因此 ADD4 模块中 PC 的自增量为4；在向指令内存 INST_MEM 取指时，略去 PC 的末2位作为地址（32位机器的内存中的一个位置存储32位数据，即一个字，4字节）。ADD4 模块中还有一个停机判断，若停机信号为真，则PC不再自增，保持当前值；在 $RV32I$ 架构中，停机指令为 $0x00100073$ ，即 $ebreak$ 指令。
 
 ![NPC_MUX](npc_mux_struc.png "Schematic of NPC-MUX")
 <center>  <b>Schematic of NPC-MUX</b>  </center>
 
-如图，选择单元NPC-MUX选择下一个周期给到PC寄存器的值，它可以是自增后的 $pc\_add4$ （无分支和跳转），也可以是来自 $ALU\_res$ 的 $pc\_offset$ （有分支和跳转）； $jalr$ 指令要求将最低位置为 $0$ ，因此端口 $pc\_j$ 是 $ALU\_res$ 与 $\sim 1$ 按位与的结果。选择信号 $NPC\_{sel}$来自分支控制模块Branch。
+如图，选择单元 NPC-MUX 选择下一个周期给到PC寄存器的值，它可以是自增后的 pc_add4 （无分支和跳转），也可以是来自 ALU_res 的 pc_offset （有分支和跳转）； jalr 指令要求将最低位置为 $0$ ，因此端口 pc_j 是 ALU_res 与 ~1 按位与的结果。选择信号 NPC_sel 来自分支控制模块 Branch 。
 
-#### 译码器
-代码及具体过程的注释可见于 `Decoder.v`。
+代码及注释见 `PC.v` ，`ADD4.v` 与 `MUX2.v` 。
+
+#### 译码器 Decoder
 
 ![Schematic of Decoder](decode_struc.png "Schematic of Decoder")
 <center>  <b>Schematic of Decoder</b>  </center>
@@ -55,79 +57,63 @@
 - br_type：分支跳转的类型；
 - ifhalt：是否停机。
 
-译码器模块是一个巨大的组合逻辑单元，所有的信号都根据 $inst$ 的数值结合对应指令集的译码规则得出。若一条指令中没有某个输出信号，则该信号在当前周期不起作用，只需要保证起作用的信号是正确的即可。为方便仿真调试的时候看得清晰，我的设计中将当前指令中没有的信号都赋为 $0$ 。
+译码器模块是一个巨大的组合逻辑单元，所有的信号都根据 inst 的数值结合对应指令集的译码规则得出。若一条指令中没有某个输出信号，则该信号在当前周期不起作用，只需要保证起作用的信号是正确的即可。为方便仿真调试的时候看得清晰，我们的设计中将当前指令中没有的信号都赋为 $0$ 。
 
-#### 寄存器文件
-代码及具体过程的注释可见于 `RegFile.v` 。
+代码及注释见 `Decoder.v` 。
+#### 寄存器文件 Regfile
 
 ![Schematic of Regfile](rf_struc.png "Schematic of Regfile")
 <center>  <b>Schematic of Regfile</b>  </center>
 
-如图，寄存器文件是一个 $32 \times 32$ 的寄存器堆，$rf\_{ra0} - rf\_{rd0}$、$rf\_{ra1} - rf\_{rd1}$ 为数据读取端口；$rf\_{wd} - rf\_{wa}$ 为数据写入端口；$rf\_{we}$ 为写使能信号。读端口、写端口和写使能信号都是由译码器Decoder提供的。寄存器文件的写入操作应当在每个时钟上升沿进行，读操作是时钟异步的（实际上是组合逻辑），即只要地址给定，对应寄存器的数值就能读出，而无需等待时钟边沿的到来。我们的 CPU 并没有对寄存器进行复位的功能需求。用户在编写汇编程序时，除了 $0$ 号寄存器始终为 $0$ 之外，不应当假定任何寄存器具有固定的初始值；因此，我们在实现 CPU 时，也取消了寄存器堆的复位端口信号。debug 接口 $debug\_reg\_ra$、$debug\_reg\_rd$。这一对端口与数据读端口功能一致，只用于仿真与上板时的调试。CPU 在正常运行时并不会用到这两个端口。
+如图，寄存器文件是一个 $32 \times 32$ 的寄存器堆，rf_ra0 - rf_rd0、rf_ra1 - rf_rd1 为数据读取端口；rf_wd - rf_wa 为数据写入端口； rf_we 为写使能信号。读端口、写端口和写使能信号都是由译码器 Decoder 提供的。寄存器文件的写入操作应当在每个时钟上升沿进行，读操作是时钟异步的（组合逻辑），即只要地址给定，对应寄存器的数值就能读出，而无需等待时钟边沿的到来。我们的CPU并没有对寄存器进行复位的功能需求。用户在编写汇编程序时，除了 $0$ 号寄存器始终为 $0$ 之外，不应当假定任何寄存器具有固定的初始值；因此，我们在实现CPU时，也取消了寄存器堆的复位端口信号。debug 接口 debug_reg_ra、debug_reg_rd 这一对端口与数据读端口功能一致，只用于仿真与上板时的调试。CPU在正常运行时并不会用到这两个端口。
 
-#### 算术逻辑单元
-代码及具体过程的注释可见于 `ALU.v` 。
+代码及注释见 `RegFile.v` 。
+
+#### 算术逻辑单元 ALU
 
 ![Schematic of ALU](alu_struc.png "Schematic of ALU")
 <center>  <b>Schematic of ALU</b>  </center>
 
-ALU是一个组合逻辑单元，根据输入的操作码 $alu\_op$ 选择对应的运算模式。ALU的输入是两个操作数 $alu\_src0$ 和 $alu\_src1$ ，输出是运算结果 $alu\_res$ 。ALU的运算模式有加法、减法、有符号比较、无符号比较、与、或、异或、左移、逻辑右移、算术右移、源操作数0、源操作数1。这些运算模式的选择是由译码器Decoder提供的。这套OP码是根据 $LV32R$ （LoongArch，龙芯公司）指令集架构设计的，这是为了便于代码复用到LoongArch时的Decoder译码逻辑的编写，故我前文基于RISC-V的译码器编写反而会略显繁琐。一些细节是verilog的数据类型默认是无符号数，移位运算的移位位数只取操作数的后 $5$ 位。
+ALU （Arithmetic Logical Unit）是一个组合逻辑单元，根据输入的操作码 alu_op 选择对应的运算模式。ALU 的输入是两个操作数 alu_src0 和 alu_src1 ，输出是运算结果 alu_res 。ALU 的运算模式有加法、减法、有符号比较、无符号比较、与、或、异或、左移、逻辑右移、算术右移、源操作数0、源操作数1。这些运算模式的选择是由译码器 Decoder 提供的。这套OP码是根据 $LV32R$ （LoongArch，龙芯公司）指令集架构设计的，这是为了便于代码复用到 LoongArch 时的 Decoder 的译码逻辑的编写。在设计时需要注意这些细节：
+- verilog的数据类型默认是无符号数。
+- 移位运算的移位位数只取操作数的后 $5$ 位。
 
-#### 分支控制模块
-代码及具体过程的注释可见于 `Branch.v` 。
+代码及注释见 `ALU.v` 。
+
+#### 分支控制模块 Brancb
 
 ![Schematic of Branch](branch_struc.png "Schematic of Branch")
 <center>  <b>Schematic of Branch</b>  </center>
 
-分支控制模块Branch是一个组合逻辑单元，根据输入的分支类型 $br\_type$ 和两个操作数 $br\_src0$ 和 $br\_src1$ ，选择下一个周期的PC值。分支类型有 $BEQ$、$BNE$、$BLT$、$BGE$、$BLTU$、$BGEU$、$JAL$、$JALR$。分支类型的选择 $br\_type$ 由译码器Decoder提供。对于 $BEQ$、$BNE$、$BLT$、$BGE$、$BLTU$、$BGEU$，将根据两个操作数的比较结果选择下一个周期的PC值（不跳转为选择 $pc\_add4$ ，跳转为选择 $pc\_offset(=Alu\_res)$ ）；对于 $JAL$、$JALR$分别选择 $pc\_offset$ 和 $pc\_j(=pc\_offset\,\,\&\, \sim 1)$ 。Branch输出的这一选择信号给到选择单元NPC-MUX作为选择信号进行下一周期PC值的选择。
+分支控制模块 Branch 是一个组合逻辑单元，根据输入的分支类型 br_type 和两个操作数 br_src0 和 br_src1 ，选择下一个周期的PC值。分支类型有 BEQ、BNE、BLT、BGE、BLTU、BGEU、JAL、JALR。分支类型的选择 br_type 由译码器 Decoder 提供。对于 BEQ、BNE、BLT、BGE、BLTU、BGEU，将根据两个操作数的比较结果选择下一个周期的PC值（不跳转为选择pc_add4 ，跳转为选择 pc_offset(=Alu_res) ）；对于 $JAL$、$JALR$分别选择 pc_offset 和 pc_j(=pc_offset & ~1) 。Branch 输出的这一信号传递给选择单元 NPC-MUX 作为选择信号进行下一周期 PC 值的选择。
 
-#### 访存控制单元
-代码及具体过程的注释可见于 `SLU.v` 。
+代码及注释见 `Branch.v` 。
+
+#### 访存控制单元 SLU
 
 ![Schematic of SLU](slu_struc.png "Schematic of SLU")
 <center>  <b>Schematic of SLU</b>  </center>
 
-访存控制单元SLU是一个组合逻辑单元，根据输入的访存类型 $dmem\_access$ 和访存地址 $addr$ ，选择对应的访存操作。模块SLU有7个输入和3个输出。输入包括32位地址 $addr$ 、4位内存访问类型 $dmem\_access$ 、两个32位数据输入 $rd\_in$ 和 $wd\_in$ 。输出包括两个32位数据输出（$rd\_out$ 和 $wd\_out$ ）和一个内存写使能信号（$dmem\_we$）。$rd\_in$ 和 $wd\_out$ 是与数据内存相连的，进行读操作时，SLU根据具体的读类型处理从数据内存中加载来的 $rd\_in$ 作处理，并作为 $rd\_out$ 输出给寄存器堆写回选择器；进行写操作时，SLU根据具体的写类型将 $rd\_in$ 的部分位或全部位替换为写入数据 $wd\_in$，再作为写数据 $wd\_out$ 传给数据内存。
+SLU 是一个组合逻辑单元，根据输入的访存类型 dmem_access 和访存地址 addr ，选择对应的访存操作。模块 SLU 有7个输入和3个输出。输入包括 32  位地址 addr 、4 位内存访问类型 dmem_access 、两个32位数据输入 rd_in 和 wd_in 。输出包括两个32位数据输出（ rd_out 和 wd_out ）和一个内存写使能信号（ dmem_we ）。rd_in 和 wd_out 是与数据内存相连的，进行读操作时，SLU根据具体的读类型处理对从数据内存中加载来的 rd_in 作处理，并将处理结果作为 rd_out 输出给寄存器堆写回选择器；进行写操作时，SLU根据具体的写类型将 rd_in 的部分位或全部位替换为写入数据 wd_in 的部分位或全部位，再作为写数据 wd_out 传给数据内存。
 
-访存类型有 $LW$（加载字）、$LH$（加载半字）、$LB$（加载字节）、$LHU$（无符号加载半字）、$LBU$（无符号加载字节）、$SW$（存储字）、$SH$（存储半字）、$SB$（存储字节）。这些访存类型的选择由译码器Decoder提供。对于全字和半字读写，模块内部使用half_word_aligned和whole_word_aligned，用于检查地址是否对齐到半字或全字，若地址不对齐，将禁止读写操作。读操作是时钟异步的（实际上是组合逻辑），即只要地址给定，对应存储器的数据就能读出，而无需等待时钟边沿的到来。写操作应当在每个时钟上升沿进行。一个需要注意的细节是 $RV32I$ 是一个小端架构，即低地址存放低位数据，高地址存放高位数据，并且在写操作的半字或字节写入时，写入寄存器数据中的低位。
+访存类型有 LW（加载字）、LH（加载半字）、LB（加载字节）、LHU（无符号加载半字）、LBU（无符号加载字节）、SW（存储字）、SH（存储半字）、SB（存储字节）。访存类型选择信号 dmem_access 由译码器 Decoder 提供。对于全字和半字读写，模块内部使用信号 half_word_aligned 和 whole_word_aligned 检查地址是否对齐到半字或全字，若地址不对齐，将禁止读写操作。读操作是时钟异步的（组合逻辑），即只要地址给定，对应存储器的数据就能读出，而无需等待时钟边沿的到来。写操作应当在每个时钟上升沿进行。一个需要注意的细节是 $RV32I$ 是一个小端架构，即低地址存放低位数据，高地址存放高位数据，并且在写操作的半字或字节写入时，写入寄存器数据中的低位。
 
-#### 选择单元
-代码及具体过程的注释可见于 `MUX.v` 与 `MUX2.v` 。
+代码及注释见 `SLU.v` 。
 
-一位的多路复用器MUX用于ALU的源操作数的选择，两个MUX分别用来在 $pc$ 和 $rs_1$ 之间以及 $imm$ 和 $rs_2$ 之间选择ALU的源操作数。两位的多路复用器分别是NPC-MUX（NPC选择器）和RF-WD-MUX（寄存器堆写回选择器），用于选择下一个周期的PC值和选择寄存器堆的写回数据；这两个多路复用器的选择信号分别由Branch和Decoder提供。
+#### 选择单元 MUX
 
-#### 指令内存与数据内存
-指令内存IM与数据内存DM使用EDA软件（如vivado）自带的IP核生成，其功能是存储指令和数据。指令内存的输入是PC的值，输出是对应地址的指令；数据内存的输入是访问地址和经过SLU处理的写入数据与写使能信号，输出访问地址处的数据同时对数据内存进行写操作（若写使能为真）。指令内存的初始化文件是机器码指令文件的coe文件，数据内存也可以用coe文件初始化（如果有需要）。准确地说，内存单元并不属于CPU体系。
+许多模块里已经包含了大量的多路复用器，但为了数据通路的清晰和模块功能的明确，一些 MUX 被我们在CPU顶层中单独例化：两个一位的多路复用器MUX用于ALU的源操作数的选择，他们MUX分别用来在 $pc$ 和 $rs_1$ 之间以及 $imm$ 和 $rs_2$ 之间选择ALU的源操作数。两个两位的多路复用器分别是 NPC-MUX （NPC选择器）和 RF-WD-MUX （寄存器堆写回选择器），用于选择下一个周期的PC值与选择寄存器堆的写回数据；这两个多路复用器的选择信号分别由 Branch 和 Decoder 提供。
 
-#### CPU顶端设计
-代码及具体过程的注释可见于 `CPU.v` 。
+#### 指令内存 IM 与数据内存 DM
+指令内存（Instruction Memory）与数据内存（Data Memory）使用EDA软件（如vivado）自带的 IP 核生成，其功能是存储指令和数据。指令内存的输入是 PC 的值，输出是对应地址的指令；数据内存的输入是访问地址和经过 SLU 处理的写入数据与写使能信号，输出访问地址处的数据的同时对数据内存进行写操作（若写使能为真）。指令内存的初始化文件是机器码指令文件的coe文件，数据内存也可以用coe文件初始化（如果有需要）。准确地说，内存单元并不属于CPU体系，在CPU的顶层中，我们也没有这些内存模块，而是将与内存交流的接口作为CPU的输入与输出。
 
-CPU顶端的设计，只需结合数据通路，连接和例化各模块即可；设计中的 $commit$ 和 $debug$ 形式的端口是用于上板时利用PDU进行调试、测试设计成果的。
+#### CPU顶层设计
 
-### 实验测试
+CPU顶端的设计，只需结合数据通路，连接和例化各模块即可；设计中的 $commit$ 和 $debug$ 形式的端口是用于上板时利用PDU进行调试、测试设计成果的。代码及注释见 `CPU.v` 。
 
-#### 仿真测试
 
-仿真测试的代码可见于 `CPU_testbench.v` （仿真代码可在 `sims` 文件夹里看到）。可以使用 rars 或者其他的RISC-V汇编器生成的机器码指令文件，然后将其转换为 verilog 的初始化文件（coe文件）初始化指令内存IP核，然后将其加载到EDA软件的仿真器中进行仿真测试。
 
-我提供了一些测试用例和汇编器 rars ，可在 `tests` 文件夹里看到（ rars 需要在有安装和配置 java 环境的情况下使用）。
-
-#### 上板测试
-
-上板测试的框架如图所示，通过PDU进行调试、测试设计成果。
-![Framework of FPGA Test](fpga_test.png "Framework of FPGA Test")
-<center>  <b>Framework of FPGA Test</b>  </center>
-
-这一框架可见于文件夹 `vsrc` ，其中的 `TOP.v` 是整个设计的顶层，在其中已经实例化了PDU、CPU、内存模块并把端口连接。数据通路如图：
-
-![Datapath of FPGA Test](PDU.png "Datapath of FPGA Test")
-<center>  <b>Datapath of FPGA Test</b>  </center>
-
-上板约束文件可见于 `constraints.xdc` ；板上控制单元PDU在上板时的调试方法，可以参考[PDU使用手册](https://soc.ustc.edu.cn/COD/lab3/PDU_intro/)。
-
-# <center> 五级流水线CPU设计 </center>
-## <center> 俞嘉权 PB22010390 </center>
-#### <center> 2024年春季学期，计算机组成原理实验 </center>
+## <center> 五级流水线CPU设计 </center>
 
 ### 设计概述
 
@@ -147,12 +133,7 @@ CPU顶端的设计，只需结合数据通路，连接和例化各模块即可�
 - 减少冲突和延时：将指令执行过程分解为五个独立的阶段有助于减少不同指令之间的资源冲突（如寄存器和内存的使用），并允许更细粒度的优化和调度；所遇到的冒险（数据冒险、控制冒险等）也容易处理，是简单的流水线CPU的设计。
 - 支持更高级的优化技术：五级流水线的基础结构为许多高级处理技术提供了可能，包括超标量执行、动态指令调度、分支预测和乱序执行等。这些技术都依赖于流水线的基本分解，以进一步提升性能。
 
-本次实验设计的CPU中每个阶段的硬件模块与我们之前的单周期CPU基本一致，但在这些模块之间通过段间寄存器进行连接，从而对数据的传递引入时序，实现流水线的分级。
-
-![PipelineCPU](pipeline.png "PipelineCPU")
-<center>  <b>Datapath of PipelineCPU</b>  </center>
-
-数据通路如图，使用verilog语言完成这些设计。
+本次实验设计的CPU中每个阶段的硬件模块与我们之前的单周期CPU基本一致，在原来的基础上，通过段间寄存器在模块之间进行连接，从而对数据的传递引入时序，实现流水线的分级。我们还需要考虑流水线CPU中可能出现的冒险情况，如数据冒险、控制冒险等，并设计相应的解决方案。
 
 ### 设计细节
 
@@ -173,17 +154,17 @@ CPU顶端的设计，只需结合数据通路，连接和例化各模块即可�
 
 #### 段间寄存器 IR
 
-段间寄存器是流水线CPU中的重要组成部分，它用于分隔不同阶段的数据，保证数据的传递是有序的。在我们的设计中，我们使用了 4 个段间寄存器，分别用于 IF 到 ID、ID 到 EX、EX 到 MEM、MEM 到 WB、WB 到 IF 的数据传递。这些段间寄存器在每个时钟周期的上升沿将数据传递到下一个阶段，保证流水线的正常工作。它还有 4 个额外的接口，rst 、en 、stall 和 flush：
+段间寄存器（InterSegment Registers）是流水线CPU中的重要组成部分，它用于分隔不同阶段的数据，保证数据的传递是有序的。在我们的设计中，我们使用了 4 个段间寄存器，分别用于 IF 到 ID、ID 到 EX、EX 到 MEM、MEM 到 WB、WB 到 IF 的数据传递。这些段间寄存器在每个时钟周期的上升沿将数据传递到下一个阶段，保证流水线的正常工作。它还有 4 个额外的接口，rst 、en 、stall 和 flush：
 - rst 的效果为异步清空，当此信号高电平时段间寄存器的所有寄存器都将被清空，与 CPU 的 rst 信号连接，它的优先级最高。
 - flush 的效果为同步清空，若时钟上升沿此信号高电平，段间寄存器的所有寄存器都将被清空，它的优先级高于 stall （控制冒险时产生 flush 信号（尤其是 IF 到 ID 的 flush 信号），这是为了给控制冒险以更高的优先级）。
 - stall 的效果为停驻，若时钟上升沿此信号高电平，输出仍保持之前的值不变，而非接收输入（也即其是反向的写使能信号，它的优先级高于 en ）。
 - en 的作用是让段间寄存器受到 PDU 的控制，保证其与 PC 寄存器 en 端口的同步。段间寄存器的 en 端口连接到 global_en 。
 
-段间寄存器的代码见 `Intersegment_register.v` 。
+段间寄存器的代码见 `Intersegment_register.v` ，这个模块是一个通用的段间寄存器，即它可以代码复用于 IF2ID, ID2EX, EX2MEM, MEM2WB 这4个段间，这样做的弊端是每个段间都是有一些端口是空接的，会导致电路资源的浪费，所以使用时也可以分别在每个段间把空接的那些端口删去，从而分别设计为每个段间的专用模块。
 
 #### 数据前递单元 DFU
 
-数据前递单元用于解决数据冒险中可以前递的情况，它处理数据冒险中的情况 b 与情况 c ，模块示意图如下：
+数据前递单元（Data Forwarding Unit）用于解决数据冒险中可以前递的情况，它处理数据冒险中的情况 b 与情况 c ，模块示意图如下：
 
 ![Schematic of DFU](DFU_struc.png "Schematic of DFU")
 <center>  <b>Schematic of DFU</b>  </center>
@@ -221,3 +202,33 @@ CPU顶端的设计，只需结合数据通路，连接和例化各模块即可�
 - 输出信号为各段间寄存器对应的 stall 与 flush 信号。
 
 段间寄存器控制模块的代码见 `SegCtrl.v` 。
+
+#### CPU顶层设计
+
+![PipelineCPU](PipelineCPU.png "PipelineCPU")
+<center>  <b>Datapath of PipelineCPU</b>  </center>
+
+CPU顶层的数据通路如图，在原先单周期CPU已经例化各模块的基础上，只需将信号定义为多阶段的，将需要传递的信号在段间寄存器间传递并且例化新增的模块即可。
+
+
+
+## <center> 仿真与上板测试 </center>
+### 仿真测试
+
+可以使用 rars（ rars 需要在有安装和配置 java 环境的情况下使用）或者其他的 RISC-V 汇编器对写好的用于测试的汇编程序生成机器码指令文件（coe文件），这是 verilog 用于初始化内存 IP 核的文件。在EDA软件（如 vivado ）中用 coe 文件初始化指令内存的 IP 核后，即可在EDA软件的仿真器中进行仿真测试。
+
+仿真测试的代码见 `CPU_testbench.v` （另外提供了对译码器的仿真文件 `Decoder_testbench.v` ），同时还提供了 RISC-V 的汇编器 rars 与几个测试用例。
+
+### 上板测试
+
+我们在FPGA开发板上测试时通过板上控制单元 PDU 进行调试、测试设计成果。PDU 在上板时的调试方法，可以参考[PDU使用手册](https://soc.ustc.edu.cn/COD/lab3/PDU_intro/)。上板测试的框架如图所示：
+
+![Framework of FPGA Test](fpga_test.png "Framework of FPGA Test")
+<center>  <b>Framework of FPGA Test</b>  </center>
+
+这一框架可见于文件夹 `vsrc` ，其中的 `TOP.v` 是整个设计的顶层，在其中已经实例化了PDU, CPU与内存模块并且把端口连接。数据通路如图：
+
+![Datapath of FPGA Test](PDU.png "Datapath of FPGA Test")
+<center>  <b>Datapath of FPGA Test</b>  </center>
+
+上板约束文件见 `constraints.xdc` ，其中的约束文件是针对中国科大实验室的开发板的，如果使用其他型号开发板，需要修改约束文件。中国科大提供在线使用FPGA开发板的服务，网址：[https://fpgaol.ustc.edu.cn](https://fpgaol.ustc.edu.cn)。
