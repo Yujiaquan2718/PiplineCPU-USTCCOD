@@ -16,7 +16,7 @@
 7. 访存控制单元（SLU）
 8. 数据内存（DATA_MEM）
 9. 选择单元（MUX）
-![DATAPATH](CPU.png "Datapath of CPU")
+![DATAPATH](SingleCycleCPU.png "Datapath of CPU")
 <center>  <b>Datapath of CPU</b>  </center>
 
 CPU的数据通路如图，使用verilog语言完成这些设计。
