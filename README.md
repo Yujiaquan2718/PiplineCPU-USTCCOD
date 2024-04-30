@@ -71,7 +71,7 @@ CPU的数据通路如图，使用verilog语言完成这些设计。
 
 #### 算术逻辑单元 ALU
 
-![Schematic of ALU](alu_struc.png "Schematic of ALU")
+![Schematic of ALU](Alu_struc.png "Schematic of ALU")
 <center>  <b>Schematic of ALU</b>  </center>
 
 ALU （Arithmetic Logical Unit）是一个组合逻辑单元，根据输入的操作码 alu_op 选择对应的运算模式。ALU 的输入是两个操作数 alu_src0 和 alu_src1 ，输出是运算结果 alu_res 。ALU 的运算模式有加法、减法、有符号比较、无符号比较、与、或、异或、左移、逻辑右移、算术右移、源操作数0、源操作数1。这些运算模式的选择是由译码器 Decoder 提供的。这套OP码是根据 $LV32R$ （LoongArch，龙芯公司）指令集架构设计的，这是为了便于代码复用到 LoongArch 时的 Decoder 的译码逻辑的编写。在设计时需要注意这些细节：
