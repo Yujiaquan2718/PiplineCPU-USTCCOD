@@ -1,3 +1,5 @@
+#### 中国科学技术大学 计算机组成原理实验 流水线CPU
+
 ##### 单周期CPU的设计代码见于文件夹 `designs-SingleCycleCPU` ，五级流水线CPU的设计代码见于文件夹 `designs-PiplineCPU` ，代码中有详细的注释。仿真与测试的代码与资源见于文件夹 `sims`, `tests` 。
 ##### 下面是三篇说明文档，分别是单周期CPU的设计文档、五级流水线CPU的设计文档、仿真与测试的使用说明。读者也可查看这三篇文档的PDF版本：`SingleCycleCPU_read_document.pdf`, `PiplineCPU_read_document.pdf`, `Simulate-and-test_read_document.pdf` 。
 ##### 著作信息： PB22010390 俞嘉权，中国科学技术大学，计算机组成原理实验（2024年春季学期）。
