@@ -1,0 +1,16 @@
+#-----------------------------------------------------------
+# Vivado v2023.1 (64-bit)
+# SW Build 3865809 on Sun May  7 15:05:29 MDT 2023
+# IP Build 3864474 on Sun May  7 20:36:21 MDT 2023
+# SharedData Build 3865790 on Sun May 07 13:33:03 MDT 2023
+# Start of session at: Mon Mar 17 16:00:46 2025
+# Process ID: 1128
+# Current directory: E:/Codefield/COD/COD_lab2_REG
+# Command line: vivado.exe -gui_launcher_event rodinguilauncherevent20184 E:\Codefield\COD\COD_lab2_REG\COD_lab2_REG.xpr
+# Log file: E:/Codefield/COD/COD_lab2_REG/vivado.log
+# Journal file: E:/Codefield/COD/COD_lab2_REG\vivado.jou
+# Running On: Y9000PofFAGE, OS: Windows, CPU Frequency: 2419 MHz, CPU Physical cores: 24, Host memory: 34158 MB
+#-----------------------------------------------------------
+start_gui
+open_project E:/Codefield/COD/COD_lab2_REG/COD_lab2_REG.xpr
+update_compile_order -fileset sources_1
