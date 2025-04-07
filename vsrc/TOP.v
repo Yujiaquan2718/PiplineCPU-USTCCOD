@@ -186,12 +186,12 @@ module TOP (
         .commit_pc              (cpu_commit_pc          )   ,
         .commit_inst            (cpu_commit_inst        )   ,
         .commit_halt            (cpu_commit_halt        )   ,
-        .commit_reg_we          (                       )   ,
-        .commit_reg_wa          (                       )   ,
-        .commit_reg_wd          (                       )   ,
-        .commit_dmem_we         (                       )   ,
-        .commit_dmem_wa         (                       )   ,
-        .commit_dmem_wd         (                       )   ,
+        // .commit_reg_we          (                       )   ,
+        // .commit_reg_wa          (                       )   ,
+        // .commit_reg_wd          (                       )   ,
+        // .commit_dmem_we         (                       )   ,
+        // .commit_dmem_wa         (                       )   ,
+        // .commit_dmem_wd         (                       )   ,
 
         .debug_reg_ra           (pdu_rf_addr            )   ,
         .debug_reg_rd           (rf_pdu_data            )   
